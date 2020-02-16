@@ -20,6 +20,7 @@ import top.rizon.asyncretryable.task.AsyncRetryTaskExecutor;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Method;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +43,7 @@ public class WebApplication implements ApplicationContextAware {
     }
 
     @PostConstruct
-    public void test() throws ClassNotFoundException, InterruptedException, NoSuchMethodException, NoSuchFieldException, IllegalAccessException {
+    public void test() throws ClassNotFoundException, InterruptedException, NoSuchMethodException, NoSuchFieldException, IllegalAccessException, SQLException {
 //        try {
 //            testService.aopTest("123", "456");
 //        } catch (Exception ex) {
@@ -55,7 +56,7 @@ public class WebApplication implements ApplicationContextAware {
 //        }
 //        test2();
         try {
-            testService.aopTest3(null,null);
+            testService.aopTest3(null, null);
             testService.aopTest4(new Test4Param());
         } catch (Exception ex) {
 
@@ -105,7 +106,7 @@ public class WebApplication implements ApplicationContextAware {
 
         @AsyncRetryable(argHandler = StringArgHandler.class, retryException = IllegalArgumentException.class)
         public void aopTest4(Test4Param param) {
-            System.out.println("aopTest4:"+param.getCount());
+            System.out.println("aopTest4:" + param.getCount());
             param.setCount(param.getCount() + 1);
             if (param.getCount() < 3) {
                 throw new IllegalArgumentException("retry:" + param.getCount());

@@ -18,4 +18,8 @@ public @interface AsyncRetryable {
 
     String tag() default "";
 
+    /**
+     * 方法失败是否抛出异常
+     */
+    boolean throwExp() default false;
 }

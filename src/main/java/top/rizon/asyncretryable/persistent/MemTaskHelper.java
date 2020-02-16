@@ -1,8 +1,6 @@
 package top.rizon.asyncretryable.persistent;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.stereotype.Component;
 import top.rizon.asyncretryable.model.StatusEnum;
 import top.rizon.asyncretryable.model.Task;
 import top.rizon.asyncretryable.task.TaskDataHelper;
@@ -20,8 +18,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * @date 2020/2/15
  */
 @Slf4j
-@Component
-@ConditionalOnBean(TaskDataHelper.class)
 public class MemTaskHelper implements TaskDataHelper {
     private final AtomicLong id = new AtomicLong();
     private final Map<Long, Task> tasks = new ConcurrentHashMap<>();

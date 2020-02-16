@@ -1,14 +1,17 @@
 package top.rizon.asyncretryable.task;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 import top.rizon.asyncretryable.annotation.AsyncRetryable;
 import top.rizon.asyncretryable.handler.ArgPersistentHandler;
+import top.rizon.asyncretryable.handler.EmptyArgHandler;
 import top.rizon.asyncretryable.model.BaseTaskParam;
 import top.rizon.asyncretryable.model.StatusEnum;
 import top.rizon.asyncretryable.model.Task;
@@ -18,11 +21,13 @@ import top.rizon.asyncretryable.utils.TaskGeneratorUtils;
  * @author Rizon
  * @date 2020/2/15
  */
+@Slf4j
 @Aspect
 @Component
 @RequiredArgsConstructor
 public class AsyncRetryTaskGenerator {
     private final TaskDataHelper dataHelper;
+    private final ObjectProvider<ArgPersistentHandler> argPersistentHandler;
 
     @Pointcut("@annotation(top.rizon.asyncretryable.annotation.AsyncRetryable) && args(top.rizon.asyncretryable.model.BaseTaskParam+)")
     public void methodPointcut() {
@@ -45,7 +50,11 @@ public class AsyncRetryTaskGenerator {
                     && TaskGeneratorUtils.isIncludeException(ex, retryExceptions)) {
                 submitTask(joinPoint, retryable);
             }
-            throw ex;
+            if (retryable.throwExp()) {
+                throw ex;
+            } else {
+                return null;
+            }
         }
     }
 
@@ -55,15 +64,28 @@ public class AsyncRetryTaskGenerator {
     }
 
     private void submitTask(ProceedingJoinPoint joinPoint, AsyncRetryable annotation) throws IllegalAccessException, InstantiationException {
-        Class<? extends ArgPersistentHandler> argHandler = annotation.argHandler();
-        ArgPersistentHandler argPersistentHandler = argHandler.newInstance();
 
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Class<?>[] parameterTypes = methodSignature.getMethod().getParameterTypes();
 
         String tag = annotation.tag();
+        if (tag.isEmpty()) {
+            tag = methodSignature.getMethod().getName();
+        }
+
         String invokeTargetStr = TaskGeneratorUtils.buildInvokeTarget(joinPoint);
-        String methodArgStr = argPersistentHandler.serialize(joinPoint.getArgs(), parameterTypes);
+
+        ArgPersistentHandler handler;
+        if (!annotation.argHandler().equals(EmptyArgHandler.class)) {
+            handler = annotation.argHandler().newInstance();
+        } else {
+            handler = this.argPersistentHandler.getIfAvailable();
+            if (handler == null) {
+                throw new RuntimeException("cannot find ArgPersistentHandler");
+            }
+        }
+
+        String methodArgStr = handler.serialize(joinPoint.getArgs(), parameterTypes);
 
         Task task = new Task()
                 .setTag(tag)
@@ -71,5 +93,7 @@ public class AsyncRetryTaskGenerator {
                 .setMethodArgs(methodArgStr)
                 .setStatus(StatusEnum.RUNNING.getStatus());
         dataHelper.saveTask(task);
+
+        log.info("create retry task,id:{},target:{}", task.getId(), invokeTargetStr);
     }
 }
