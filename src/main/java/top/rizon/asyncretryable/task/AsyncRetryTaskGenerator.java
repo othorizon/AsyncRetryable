@@ -38,18 +38,24 @@ public class AsyncRetryTaskGenerator {
         AsyncRetryable retryable = ((MethodSignature) joinPoint.getSignature()).getMethod().getAnnotation(AsyncRetryable.class);
         Class<? extends Throwable>[] retryExceptions = retryable.retryException();
 
+        //是否是由任务执行器发起的调用
         boolean retryTask = isRetryTask(joinPoint);
-
 
         try {
             return joinPoint.proceed();
         } catch (Throwable ex) {
-            //跳过重试任务
-            if (!retryTask
-                    //包含重试的异常
-                    && TaskGeneratorUtils.isIncludeException(ex, retryExceptions)) {
-                submitTask(joinPoint, retryable);
+            //重试任务跳过
+            if (retryTask) {
+                throw ex;
             }
+
+            //异常类型不是指定的重试异常 跳过
+            if (!TaskGeneratorUtils.isIncludeException(ex, retryExceptions)) {
+                throw ex;
+            }
+
+            //生成任务
+            submitTask(joinPoint, retryable);
             if (retryable.throwExp()) {
                 throw ex;
             } else {

@@ -10,12 +10,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
 import top.rizon.asyncretryable.annotation.AsyncRetryable;
 import top.rizon.asyncretryable.handler.ArgPersistentHandler;
 import top.rizon.asyncretryable.model.BaseTaskParam;
+import top.rizon.asyncretryable.persistent.MemTaskHelper;
 import top.rizon.asyncretryable.task.AsyncRetryTaskExecutor;
 
 import javax.annotation.PostConstruct;
@@ -40,6 +42,11 @@ public class WebApplication implements ApplicationContextAware {
 
     public static void main(String[] args) {
         SpringApplication.run(WebApplication.class, args);
+    }
+
+    @Bean
+    public MemTaskHelper memTaskHelper() {
+        return new MemTaskHelper();
     }
 
     @PostConstruct
