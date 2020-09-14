@@ -15,7 +15,11 @@
 这也就表示即使系统重启任务依然可以被继续执行。  
 以及如果你进行了多节点的集群部署，那么任务数据将被共享执行。
 
-## DEMO
+### 使用
+
+在需要重试的方法上添加注解`@AsyncRetryable`，被注解的方法参数必须为`BaseTaskParam`的子类  
+
+#### DEMO
 
 执行测试方法 `top.rizon.WebApplicationTest.main()`  
 在该DEMO中，为了方便演示，实现了一个基于内存的持久化方案(`top.rizon.MemTaskHelper`)  
