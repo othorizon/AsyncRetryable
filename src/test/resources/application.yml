@@ -1,0 +1,11 @@
+# 任务配置
+task:
+  enable-async-retry: true
+  # 轮训周期
+  fixed-delay: 3000
+  # 锁超时时间
+  lock-timeout: 120000
+  # 最大重试次数
+  max-retry-count: 3
+  # 失败重试任务推迟指定毫秒后执行 fixed-delay的时间也会计算在内
+  delay-millis: 1000

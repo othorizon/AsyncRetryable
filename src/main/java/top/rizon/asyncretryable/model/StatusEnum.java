@@ -14,6 +14,8 @@ public enum StatusEnum {
     RUNNING(0),
     SUCCESS(1),
     FAILED(2),
+    /*等待手动执行*/
+    PENDING(3)
     ;
     private Integer status;
 }

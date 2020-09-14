@@ -2,14 +2,11 @@ package top.rizon.asyncretryable.model;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import top.rizon.asyncretryable.sql.annotation.Column;
-import top.rizon.asyncretryable.sql.annotation.Table;
 
 /**
  * @author Rizon
  * @date 2020/2/15
  */
-@Table(tableName = "async_retryable_task" , keyFields = "id")
 @Data
 @Accessors(chain = true)
 public class Task {
@@ -29,12 +26,10 @@ public class Task {
      * eg. {@code top.rizon.WebApplication$TestService;aopTest;java.lang.String,java.lang.String }
      * eg. {@code top.rizon.WebApplication$TestService;aopTest2; }
      */
-    @Column(name = "invoke_target")
     private String invokeTarget;
     /**
      * 执行方法的参数，逗号分割的json字符串数组
      */
-    @Column(name = "method_args")
     private String methodArgs;
     /**
      * 任务状态
@@ -42,5 +37,15 @@ public class Task {
      * @see StatusEnum
      */
     private Integer status;
+
+    /**
+     * 用于多节点的集群部署时加锁处理
+     */
+    private long lastTime;
+
+    /**
+     * 用于判断锁超时处理
+     */
+    private boolean processing;
 
 }
