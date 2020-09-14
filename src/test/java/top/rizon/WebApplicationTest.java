@@ -70,6 +70,7 @@ public class WebApplicationTest {
     public void test() {
         log.info("start test");
         testService.failTest(new TestParam(System.currentTimeMillis()));
+        log.info("任务失败不会抛出异常，并且不会阻塞，重试行为会在任务线程中被触发");
     }
 
 
